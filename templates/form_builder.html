@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Dynamic Form Builder</title>
+
+    <style>
+        .field-box {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 10px;
+            padding: 10px;
+            border: 1px solid #333;
+            background: #fafafa;
+            cursor: grab;
+        }
+        #form-container { width: 400px; }
+        .btn { padding: 6px 12px; border: 1px solid black; cursor: pointer; margin-right: 10px; }
+
+        .delete-btn {
+            padding: 4px 8px;
+            background: red;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        
+    </style>
+
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
+</head>
+
+<body>
+
+<h2>Dynamic Form Builder</h2>
+
+<div id="form-container">
+    {% for field in fields %}
+    <div class="field-box" data-id="{{ field.id }}">
+        <input type="text" value="{{ field.label }}" disabled>
+        <select disabled>
+            <option>{{ field.field_type }}</option>
+        </select>
+        <button class="delete-btn" onclick="deleteField(this)">Delete</button>
+    </div>
+    {% endfor %}
+</div>
+
+<br>
+<button class="btn" onclick="addField()">Add Field</button>
+<button class="btn" onclick="saveAll()">Save</button>
+
+<script>
+function addField() {
+    let box = document.createElement("div");
+    box.className = "field-box";
+
+    box.innerHTML = `
+        <input type="text" placeholder="Label">
+        <select>
+            <option value="text">Text</option>
+            <option value="number">Number</option>
+            <option value="date">Date</option>
+            <option value="password">Password</option>
+        </select>
+        <button class="delete-btn" onclick="deleteField(this)">Delete</button>
+    `;
+
+    document.getElementById("form-container").appendChild(box);
+}
+
+new Sortable(document.getElementById('form-container'), {
+    animation: 150,
+});
+
+function saveAll() {
+    let all_fields = document.querySelectorAll(".field-box");
+
+    let payload = [];
+    
+    all_fields.forEach((box, index) => {
+        let label = box.querySelector("input").value;
+        let type = box.querySelector("select").value;
+
+        payload.push({
+            label: label,
+            field_type: type,
+            order: index
+        });
+    });
+
+    fetch("/save-field/", {
+        method: "POST",
+        body: JSON.stringify(payload[payload.length - 1]),
+    });
+
+    alert("Fields Saved!");
+}
+
+function deleteField(btn) {
+    let box = btn.parentElement;
+    let fieldId = box.getAttribute("data-id");
+
+    // If field exists in DB → delete through API
+    if (fieldId) {
+        fetch("/delete-field/" + fieldId + "/", {
+            method: "DELETE"
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.status === "success") {
+                box.remove();
+            }
+        });
+    } 
+    else {
+        // Unsaved new field → remove from UI only
+        box.remove();
+    }
+}
+
+
+</script>
+
+</body>
+</html>

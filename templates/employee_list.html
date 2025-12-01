@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Employee List</title>
+
+    <style>
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th, td { border: 1px solid #ddd; padding: 10px; text-align: left; }
+        th { background: #f2f2f2; }
+        .delete-btn {
+            padding: 5px 10px;
+            background: red;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        .search-box {
+            padding: 8px;
+            width: 250px;
+        }
+    </style>
+</head>
+
+<body>
+
+<h2>Employee List</h2>
+
+<input type="text" class="search-box" placeholder="Search employee..." 
+       value="{{ search_query }}" 
+       onkeyup="searchEmployee(this.value)" />
+
+<table id="employeeTable">
+    <thead>
+        <tr>
+            {% for field in dynamic_fields %}
+                <th>{{ field.label }}</th>
+            {% endfor %}
+            <th>Action</th>
+        </tr>
+    </thead>
+
+    <tbody>
+        {% for emp in employees %}
+        <tr data-id="{{ emp.id }}">
+            {% for value in emp.data %}
+                <td>{{ value }}</td>
+            {% endfor %}
+
+            <td>
+                <button class="delete-btn" onclick="deleteEmployee({{ emp.id }})">Delete</button>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<script>
+function searchEmployee(query) {
+    window.location.href = "/employee/list/?q=" + query;
+}
+
+function deleteEmployee(id) {
+    if (!confirm("Delete this employee?")) return;
+
+    fetch("/delete-employee/" + id + "/", {
+        method: "DELETE"
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.status === "success") {
+            document.querySelector(`tr[data-id='${id}']`).remove();
+        }
+    });
+}
+</script>
+
+</body>
+</html>

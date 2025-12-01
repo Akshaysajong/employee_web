@@ -1,0 +1,52 @@
+<h2>Create Employee</h2>
+
+<!-- CSRF Token -->
+<input type="hidden" id="csrf_token" value="{{ csrf_token }}">
+
+<div id="employee-form">
+    {% for f in fields %}
+        <label>{{ f.label }}</label>
+
+        {% with f.label|lower|slugify as safe_id %}
+            <input 
+                type="{{ f.field_type }}" 
+                id="{{ safe_id }}" 
+                name="{{ f.label }}" 
+                class="input-field"
+            >
+        {% endwith %}
+
+        <br><br>
+    {% endfor %}
+</div>
+
+<button id="save-btn">Save</button>
+
+<!-- jQuery -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+<script>
+$("#save-btn").on("click", function () {
+    let formData = {};
+
+    $(".input-field").each(function() {
+        formData[$(this).attr("name")] = $(this).val();
+    });
+
+    $.ajax({
+        url: "/save-employee/",
+        type: "POST",
+        data: JSON.stringify(formData),
+        contentType: "application/json",
+        headers: {
+            "X-CSRFToken": $("#csrf_token").val()
+        },
+        success: function (response) {
+            alert("Employee saved successfully!");
+        },
+        error: function (xhr) {
+            alert("Error: " + xhr.responseText);
+        }
+    });
+});
+</script>
