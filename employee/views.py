@@ -84,7 +84,6 @@ def list_employees(request):
 
 @csrf_exempt
 def delete_employees(request, id):
-    print('id:', id)
     emp = get_object_or_404(Employee, id=id)
-    # emp.delete()
+    emp.delete()
     return JsonResponse({"status": "success"})
