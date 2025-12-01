@@ -2,8 +2,8 @@ from django.urls import path
 from . import views
 
 urlpatterns = [
-    path('', views.form_builder, name='form_builder'),
-    path('save-field/', views.save_dynamic_field, name='save_field'),
+    path('fields/', views.form_builder, name='form_builder'),
+    path('save-fields/', views.save_dynamic_field, name='save_field'),
     path('delete-field/<int:id>/', views.delete_field, name='delete_field'),
 
     path('employee/create/', views.create_employee, name="create_employee"),
