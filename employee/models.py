@@ -12,6 +12,7 @@ class DynamicField(models.Model):
     label = models.CharField(max_length=255)
     field_type = models.CharField(max_length=100, choices=FIELD_TYPES)
     order = models.IntegerField(default=0)
+    required = models.BooleanField(default=True, help_text="Whether this field is required")
 
     def __str__(self):
         return self.label

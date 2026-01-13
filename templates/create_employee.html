@@ -1,52 +1,365 @@
-<h2>Create Employee</h2>
+{% extends 'base.html' %}
+{% load static %}
 
-<!-- CSRF Token -->
-<input type="hidden" id="csrf_token" value="{{ csrf_token }}">
+{% block content %}
+<div class="container">
+    <div class="form-container">
+        <h1 class="form-title">
+            <i class="fas fa-user-plus me-2"></i>Add Employee
+        </h1>
 
-<div id="employee-form">
-    {% for f in fields %}
-        <label>{{ f.label }}</label>
-
-        {% with f.label|lower|slugify as safe_id %}
-            <input 
-                type="{{ f.field_type }}" 
-                id="{{ safe_id }}" 
-                name="{{ f.label }}" 
-                class="input-field"
-            >
-        {% endwith %}
-
-        <br><br>
-    {% endfor %}
+        <div id="form-messages">
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                        <i class="fas {% if message.tags == 'success' %}fa-check-circle{% else %}fa-exclamation-circle{% endif %} me-2"></i>
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                {% endfor %}
+            {% endif %}
+        </div>
+        
+        <form id="employeeForm" method="POST" action="{% url 'save_employee' %}" enctype="multipart/form-data">
+            {% csrf_token %}
+            <div class="form-card">
+                <h5 class="mb-4">
+                    <i class="fas fa-user-tie me-2"></i>Employee Information
+                    <small class="text-muted ms-2">Fields marked with <span class="text-danger">*</span> are required</small>
+                </h5>
+                
+                <div class="row">
+                    {% for field in fields %}
+                    <div class="col-md-6 mb-3">
+                        <label for="field-{{ field.id }}" class="form-label">
+                            {{ field.label|title }}{% if field.required %} <span class="text-danger">*</span>{% endif %}
+                        </label>
+                        
+                        {% if field.field_type == 'text' or field.field_type == 'email' or field.field_type == 'password' or field.field_type == 'number' or field.field_type == 'date' %}
+                            <input type="{{ field.field_type }}" 
+                                   class="form-control {% if field.required %}required-field{% endif %}" 
+                                   id="field-{{ field.id }}" 
+                                   name="{{ field.label }}"
+                                   {% if field.required %}required{% endif %}
+                                   {% if field.field_type == 'number' %}min="0" step="1"{% endif %}
+                                   {% if field.field_type == 'date' %}max="{% now 'Y-m-d' %}"{% endif %}>
+                        
+                        {% elif field.field_type == 'select' %}
+                            <select class="form-select {% if field.required %}required-field{% endif %}" 
+                                    id="field-{{ field.id }}" 
+                                    name="{{ field.label }}"
+                                    {% if field.required %}required{% endif %}>
+                                <option value="" selected disabled>Select {{ field.label|title }}</option>
+                                {% if field.options %}
+                                    {% for option in field.options %}
+                                        <option value="{{ option }}">{{ option }}</option>
+                                    {% endfor %}
+                                {% endif %}
+                            </select>
+                        
+                        {% elif field.field_type == 'checkbox' %}
+                            <div class="form-check">
+                                <input class="form-check-input {% if field.required %}required-field{% endif %}" 
+                                       type="checkbox" 
+                                       id="field-{{ field.id }}" 
+                                       name="{{ field.label }}"
+                                       value="true"
+                                       {% if field.required %}required{% endif %}>
+                                <label class="form-check-label" for="field-{{ field.id }}">
+                                    {{ field.placeholder|default:"Check this box" }}
+                                </label>
+                            </div>
+                        
+                        {% elif field.field_type == 'radio' %}
+                            <div class="radio-group">
+                                {% for option in field.options %}
+                                <div class="form-check">
+                                    <input class="form-check-input {% if field.required %}required-field{% endif %}" 
+                                           type="radio" 
+                                           name="{{ field.label }}" 
+                                           id="field-{{ field.id }}-{{ forloop.counter }}"
+                                           value="{{ option }}"
+                                           {% if forloop.first and field.required %}required{% endif %}>
+                                    <label class="form-check-label" for="field-{{ field.id }}-{{ forloop.counter }}">
+                                        {{ option }}
+                                    </label>
+                                </div>
+                                {% endfor %}
+                                {% if field.required %}
+                                <div class="invalid-feedback">Please select an option</div>
+                                {% endif %}
+                            </div>
+                        
+                        {% elif field.field_type == 'textarea' %}
+                            <textarea class="form-control {% if field.required %}required-field{% endif %}" 
+                                      id="field-{{ field.id }}" 
+                                      name="{{ field.label }}" 
+                                      rows="3"
+                                      {% if field.required %}required{% endif %}></textarea>
+                        {% endif %}
+                        
+                        {% if field.help_text %}
+                            <div class="form-text text-muted">{{ field.help_text }}</div>
+                        {% endif %}
+                        <div class="invalid-feedback">This field is required</div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            
+            <div class="form-actions">
+                <a href="{% url 'list_employees' %}" class="btn btn-outline-secondary me-2">
+                    <i class="fas fa-arrow-left me-1"></i> Back to List
+                </a>
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-save me-1"></i> Save Employee
+                </button>
+            </div>
+        </form>
+    </div>
 </div>
+{% endblock %}
 
-<button id="save-btn">Save</button>
+{% block extra_css %}
+<style>
+    .required-field:invalid {
+        border-color: #dc3545;
+    }
+    .required-field:valid {
+        border-color: #198754;
+    }
+    .form-label.required:after {
+        content: ' *';
+        color: #dc3545;
+    }
+    .form-control.is-invalid, .form-select.is-invalid, .form-check-input.is-invalid {
+        border-color: #dc3545;
+    }
+    .invalid-feedback {
+        display: none;
+        width: 100%;
+        margin-top: 0.25rem;
+        font-size: 0.875em;
+        color: #dc3545;
+    }
+    .is-invalid ~ .invalid-feedback {
+        display: block;
+    }
+</style>
+{% endblock %}
 
-<!-- jQuery -->
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-
+{% block extra_js %}
 <script>
-$("#save-btn").on("click", function () {
-    let formData = {};
-
-    $(".input-field").each(function() {
-        formData[$(this).attr("name")] = $(this).val();
+$(document).ready(function() {
+    // Real-time validation for required fields
+    $('.required-field').on('input change', function() {
+        validateField($(this));
     });
-
-    $.ajax({
-        url: "/save-employee/",
-        type: "POST",
-        data: JSON.stringify(formData),
-        contentType: "application/json",
-        headers: {
-            "X-CSRFToken": $("#csrf_token").val()
-        },
-        success: function (response) {
-            alert("Employee saved successfully!");
-        },
-        error: function (xhr) {
-            alert("Error: " + xhr.responseText);
+    
+    // Validate radio buttons in a group
+    $('input[type="radio"]').on('change', function() {
+        const name = $(this).attr('name');
+        validateField($(`input[name="${name}"]:checked`).first());
+    });
+    
+    // Validate checkboxes
+    $('input[type="checkbox"]').on('change', function() {
+        validateField($(this));
+    });
+    
+    // Validate select elements
+    $('select.required-field').on('change', function() {
+        validateField($(this));
+    });
+    
+    // Function to validate a single field
+    function validateField($field) {
+        const value = $field.val();
+        const isCheckbox = $field.attr('type') === 'checkbox';
+        const isRadio = $field.attr('type') === 'radio';
+        const isSelect = $field.is('select');
+        
+        let isValid = true;
+        
+        if ($field.prop('required')) {
+            if (isCheckbox || isRadio) {
+                const name = $field.attr('name');
+                isValid = $(`input[name="${name}"]:checked`).length > 0;
+            } else if (isSelect) {
+                isValid = value !== '' && value !== null && value !== undefined;
+            } else {
+                isValid = value.trim() !== '';
+            }
         }
+        
+        // Update field state
+        if (isCheckbox || isRadio) {
+            const name = $field.attr('name');
+            const $fieldset = $(`input[name="${name}"]`).closest('.form-check, .radio-group');
+            
+            if (isValid) {
+                $fieldset.find('.is-invalid').removeClass('is-invalid');
+                $fieldset.find('.invalid-feedback').hide();
+            } else if ($field.prop('required')) {
+                $fieldset.addClass('is-invalid');
+                $fieldset.find('.invalid-feedback').show();
+            }
+        } else {
+            if (isValid) {
+                $field.removeClass('is-invalid');
+                $field.siblings('.invalid-feedback').hide();
+            } else if ($field.prop('required')) {
+                $field.addClass('is-invalid');
+                $field.siblings('.invalid-feedback').show();
+            }
+        }
+        
+        return isValid;
+    }
+    
+    // Form submission handler
+    $('#employeeForm').on('submit', function(e) {
+        e.preventDefault();
+        
+        // Reset all error states and messages
+        $('.is-invalid').removeClass('is-invalid');
+        $('.invalid-feedback').hide();
+        
+        let isValid = true;
+        const $form = $(this);
+        
+        // Validate all required fields
+        $('.required-field').each(function() {
+            if (!validateField($(this))) {
+                isValid = false;
+                // Scroll to the first invalid field
+                if (isValid === false) {
+                    $('html, body').animate({
+                        scrollTop: $(this).offset().top - 100
+                    }, 500);
+                    return false; // Break out of the each loop
+                }
+            }
+        });
+        
+        if (!isValid) {
+            const errorHtml = `
+                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                    <i class="fas fa-exclamation-circle me-2"></i>
+                    Please fill in all required fields marked with an asterisk (*).
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            `;
+            $('#form-messages').html(errorHtml);
+            return false;
+        }
+        
+        // Show loading state
+        const submitBtn = $form.find('button[type="submit"]');
+        const originalBtnText = submitBtn.html();
+        submitBtn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin me-1"></i> Saving...');
+        
+        // Collect form data as FormData
+        const formData = new FormData(this);
+        
+        // Send the data to the server
+        $.ajax({
+            url: $form.attr('action'),
+            type: 'POST',
+            data: formData,
+            processData: false,
+            contentType: false,
+            headers: {
+                'X-CSRFToken': $('input[name=csrfmiddlewaretoken]').val()
+            },
+            success: function(response) {
+                if (response.status === 'success') {
+                    const successHtml = `
+                        <div class="alert alert-success alert-dismissible fade show" role="alert">
+                            <i class="fas fa-check-circle me-2"></i>
+                            ${response.message || 'Employee created successfully!'}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    `;
+                    $('#form-messages').html(successHtml);
+                    
+                    // Reset form
+                    $form[0].reset();
+                    
+                    // Redirect to employee list after 1.5 seconds
+                    setTimeout(function() {
+                        window.location.href = response.redirect || '{% url 'list_employees' %}';
+                    }, 1500);
+                } else {
+                    let errorMessage = response.message || 'An error occurred while saving the employee. Please try again.';
+                    
+                    // Display field-specific errors if they exist
+                    if (response.errors && Array.isArray(response.errors)) {
+                        response.errors.forEach(error => {
+                            // Find the field and mark it as invalid
+                            const $field = $(`[name="${error.field}"]`);
+                            if ($field.length) {
+                                $field.addClass('is-invalid');
+                                $field.after(`<div class="invalid-feedback">${error.message}</div>`);
+                            }
+                        });
+                        
+                        // Show general error message
+                        errorMessage = 'Please correct the errors below.';
+                    }
+                    
+                    const errorHtml = `
+                        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                            <i class="fas fa-exclamation-circle me-2"></i>
+                            ${errorMessage}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    `;
+                    $('#form-messages').html(errorHtml);
+                    
+                    // Scroll to the first error message
+                    $('html, body').animate({
+                        scrollTop: $('.is-invalid').first().offset().top - 100
+                    }, 500);
+                }
+            },
+            error: function(xhr, status, error) {
+                let errorMessage = 'An error occurred while saving the employee. Please try again.';
+                
+                try {
+                    const response = JSON.parse(xhr.responseText);
+                    if (response.message) {
+                        errorMessage = response.message;
+                    } else if (response.errors) {
+                        errorMessage = response.errors.join('<br>');
+                    }
+                } catch (e) {
+                    console.error('Error parsing error response:', e);
+                }
+                
+                const errorHtml = `
+                    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                        <i class="fas fa-exclamation-circle me-2"></i>
+                        ${errorMessage}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                `;
+                $('#form-messages').html(errorHtml);
+                
+                // Scroll to the error message
+                $('html, body').animate({
+                    scrollTop: $('#form-messages').offset().top - 100
+                }, 500);
+            },
+            complete: function() {
+                // Re-enable the submit button
+                submitBtn.prop('disabled', false).html(originalBtnText);
+            }
+        });
     });
+    
+    // Initialize tooltips
+    $('[data-bs-toggle="tooltip"]').tooltip();
 });
 </script>
+{% endblock %}

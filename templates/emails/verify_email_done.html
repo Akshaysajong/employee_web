@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Email Verified - Employee Management</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #4361ee;
+            --primary-light: #4cc9f0;
+            --success-color: #4bb71b;
+            --text-color: #2b2d42;
+            --border-radius: 12px;
+            --box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+            --transition: all 0.3s ease;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #e4e8f0 100%);
+            color: var(--text-color);
+            line-height: 1.6;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            padding: 2rem 1rem;
+        }
+
+        .auth-container {
+            max-width: 480px;
+            width: 100%;
+            margin: 0 auto;
+            padding: 0 1rem;
+        }
+
+        .auth-card {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+            overflow: hidden;
+            transition: var(--transition);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .auth-header {
+            padding: 2.5rem 2rem;
+            text-align: center;
+            background: linear-gradient(135deg, var(--primary-color) 0%, #3a0ca3 100%);
+            color: white;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .logo {
+            position: relative;
+            z-index: 2;
+            margin-bottom: 1.5rem;
+        }
+
+        .logo i {
+            font-size: 2.5rem;
+            background: rgba(255, 255, 255, 0.2);
+            width: 80px;
+            height: 80px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .auth-header h1 {
+            font-size: 2rem;
+            margin: 0 0 0.5rem;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+        }
+
+        .auth-header p {
+            opacity: 0.9;
+            margin: 0;
+            font-size: 1rem;
+            font-weight: 300;
+        }
+
+        .auth-form {
+            padding: 2.5rem 2rem;
+            text-align: center;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0.75rem 1.5rem;
+            border-radius: 6px;
+            font-weight: 500;
+            text-decoration: none;
+            transition: var(--transition);
+            border: none;
+            cursor: pointer;
+            text-align: center;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-light) 100%);
+            color: white;
+            width: 100%;
+            margin-bottom: 1rem;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(67, 97, 238, 0.3);
+        }
+
+        .btn-outline-primary {
+            background: transparent;
+            border: 2px solid var(--primary-color);
+            color: var(--primary-color);
+            width: 100%;
+        }
+
+        .btn-outline-primary:hover {
+            background: rgba(67, 97, 238, 0.1);
+        }
+
+        .text-muted {
+            color: #6c757d !important;
+        }
+
+        .mt-4 {
+            margin-top: 1.5rem;
+        }
+
+        .mb-3 {
+            margin-bottom: 1rem;
+        }
+
+        .mb-4 {
+            margin-bottom: 1.5rem;
+        }
+
+        /* Success animation */
+        .success-animation {
+            width: 100px;
+            height: 100px;
+            margin: 0 auto 20px;
+            position: relative;
+        }
+
+        .checkmark {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            display: block;
+            stroke-width: 4;
+            stroke: var(--success-color);
+            stroke-miterlimit: 10;
+            box-shadow: inset 0px 0px 0px var(--success-color);
+            animation: fill .4s ease-in-out .4s forwards, scale .3s ease-in-out .9s both;
+        }
+
+        .checkmark__circle {
+            stroke-dasharray: 166;
+            stroke-dashoffset: 166;
+            stroke-width: 4;
+            stroke-miterlimit: 10;
+            stroke: var(--success-color);
+            fill: none;
+            animation: stroke .6s cubic-bezier(0.65, 0, 0.45, 1) forwards;
+        }
+
+        .checkmark__check {
+            transform-origin: 50% 50%;
+            stroke-dasharray: 48;
+            stroke-dashoffset: 48;
+            animation: stroke .3s cubic-bezier(0.65, 0, 0.45, 1) .8s forwards;
+        }
+
+        @keyframes stroke {
+            100% { stroke-dashoffset: 0; }
+        }
+
+        @keyframes scale {
+            0%, 100% { transform: none; }
+            50% { transform: scale3d(1.1, 1.1, 1); }
+        }
+
+        @keyframes fill {
+            100% { box-shadow: inset 0px 0px 0px 100px rgba(75, 183, 27, 0.1); }
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 576px) {
+            .auth-header {
+                padding: 2rem 1.5rem;
+            }
+            
+            .auth-form {
+                padding: 2rem 1.5rem;
+            }
+            
+            .auth-header h1 {
+                font-size: 1.75rem;
+            }
+
+            .logo i {
+                width: 70px;
+                height: 70px;
+                font-size: 2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="auth-container">
+        <div class="auth-card">
+            <!-- Header Section -->
+            <div class="auth-header">
+                <div class="logo">
+                    <i class="fas fa-envelope-open-text"></i>
+                    <h1>Email Verified</h1>
+                </div>
+                <p>Your email has been successfully verified!</p>
+            </div>
+
+            <!-- Content Section -->
+            <div class="auth-form">
+                <div class="mb-4">
+                    <div class="success-animation">
+                        <svg class="checkmark" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 52 52">
+                            <circle class="checkmark__circle" cx="26" cy="26" r="25" fill="none"/>
+                            <path class="checkmark__check" fill="none" d="M14.1 27.2l7.1 7.2 16.7-16.8"/>
+                        </svg>
+                    </div>
+                    <h3 class="mb-3">Verification Complete!</h3>
+                    <p class="text-muted">Thank you for verifying your email address. Your account is now active.</p>
+                </div>
+
+                <div class="d-grid gap-3 mt-4">
+                    <a href="/auth/login/" class="btn btn-primary">
+                        <i class="fas fa-sign-in-alt me-2"></i>Proceed to Login
+                    </a>
+                    
+                    <!-- <a href="/" class="btn btn-outline-primary">
+                        <i class="fas fa-home me-2"></i>Go to Homepage
+                    </a> -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS Bundle with Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
