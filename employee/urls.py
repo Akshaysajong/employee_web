@@ -14,6 +14,7 @@ urlpatterns = [
     path('employee/create/', views.create_employee, name='create_employee'),
     path('save-employee/', views.save_employee, name='save_employee'),
     path('employee/list/', views.list_employees, name='list_employees'),
+    path('employee/upload-excel/', views.upload_excel, name='upload_excel'),
     path('delete-employee/<int:id>/', views.delete_employees, name='delete_employee'),
 ]
 

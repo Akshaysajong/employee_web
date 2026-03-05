@@ -19,6 +19,7 @@ class DynamicField(models.Model):
 
 class Employee(models.Model):
     data = models.JSONField()
+    emp_data = models.JSONField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 

@@ -1,8 +1,11 @@
-from django.contrib.auth.models import User
+from django.contrib.auth import get_user_model
 from rest_framework import serializers
 from django.contrib.auth.password_validation import validate_password
-from django.contrib.auth import get_user_model, authenticate
+from django.contrib.auth import authenticate
 from employee.models import DynamicField, Employee
+import json
+
+User = get_user_model()
 
 class RegisterSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True)
@@ -52,6 +55,8 @@ class DynamicFieldSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 class EmployeeSerializer(serializers.ModelSerializer):
+    data = serializers.JSONField()
+
     class Meta:
         model = Employee
         fields = ['id', 'data', 'created_at', 'updated_at']
@@ -59,10 +64,11 @@ class EmployeeSerializer(serializers.ModelSerializer):
 
     def validate(self, attrs):
         # Optional: Validate that JSON keys match DynamicFields
-        dynamic_fields = DynamicField.objects.all()
-        field_labels = [f.label for f in dynamic_fields]
-        for key in attrs['data'].keys():
-            if key not in field_labels:
-                raise serializers.ValidationError(f"Invalid field: {key}")
+        if 'data' in attrs:
+            dynamic_fields = DynamicField.objects.all()
+            field_labels = [f.label for f in dynamic_fields]
+            for key in attrs['data'].keys():
+                if key not in field_labels:
+                    raise serializers.ValidationError(f"Invalid field: {key}")
         return attrs
 

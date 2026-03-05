@@ -9,24 +9,42 @@
             </div>
             
             <div class="d-flex flex-column flex-sm-row gap-3 w-100 w-md-auto">
+                <!-- Excel Upload Form -->
+                <form method="post" action="{% url 'upload_excel' %}" enctype="multipart/form-data" class="mb-0 me-2">
+                    {% csrf_token %}
+                    <div class="input-group">
+                        <input type="file" 
+                               name="excel_file" 
+                               class="form-control" 
+                               id="excelFile" 
+                               accept=".xlsx,.xls" 
+                               style="display: none;">
+                        <button type="button" class="btn btn-success" onclick="document.getElementById('excelFile').click()">
+                            <i class="fas fa-file-excel me-1"></i> Import Excel
+                        </button>
+                        <button type="submit" class="btn btn-primary" id="uploadBtn" style="display: none;">
+                            <i class="fas fa-upload me-1"></i> Upload
+                        </button>
+                    </div>
+                </form>
+                
+                <!-- Search Form -->
                 <div class="position-relative flex-grow-1" style="min-width: 250px;">
                     <div class="input-group">
                         <form method="get" class="mb-0">
-                            <div class="input-group">
-                                <input type="text" 
-                                    name="q" 
-                                    class="form-control" 
-                                    placeholder="Search employees..." 
-                                    value="{{ search_query }}">
-                                <button class="btn btn-primary" type="submit">
-                                    <i class="fas fa-search"></i> Search
-                                </button>
-                                {% if search_query %}
-                                    <a href="{% url 'list_employees' %}" class="btn btn-outline-secondary">
-                                        <i class="fas fa-times"></i> Clear
-                                    </a>
-                                {% endif %}
-                            </div>
+                            <input type="text" 
+                                   name="q" 
+                                   class="form-control" 
+                                   placeholder="Search employees..." 
+                                   value="{{ search_query }}">
+                            <button class="btn btn-primary" type="submit">
+                                <i class="fas fa-search"></i> Search
+                            </button>
+                            {% if search_query %}
+                                <a href="{% url 'list_employees' %}" class="btn btn-outline-secondary">
+                                    <i class="fas fa-times"></i> Clear
+                                </a>
+                            {% endif %}
                         </form>
                     </div>
                 </div>
@@ -147,6 +165,25 @@
 {% block extra_js %}
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <script>
+        // Show upload button when file is selected
+        document.getElementById('excelFile').addEventListener('change', function(e) {
+            const uploadBtn = document.getElementById('uploadBtn');
+            if (this.files.length > 0) {
+                uploadBtn.style.display = 'inline-block';
+            } else {
+                uploadBtn.style.display = 'none';
+            }
+        });
+        
+        // Show loading state when form is submitted
+        document.querySelector('form[action*="upload-excel"]').addEventListener('submit', function() {
+            const btn = this.querySelector('button[type="submit"]');
+            btn.disabled = true;
+            btn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Uploading...';
+        });
+    </script>
     <script>
     $(document).ready(function() {
         let deleteModal = new bootstrap.Modal(document.getElementById('deleteModal'));

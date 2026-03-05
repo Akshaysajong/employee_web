@@ -1,13 +1,17 @@
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponse
 from django.shortcuts import render, redirect
 from . models import *
+from .utils import process_excel_file
 import json
+import os
 from django.shortcuts import get_object_or_404
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.core.paginator import Paginator
 from django.db.models import Q
+from django.conf import settings
+from django.utils import timezone
 
 
 @login_required
@@ -166,7 +170,9 @@ def list_employees(request):
     dynamic_fields = DynamicField.objects.order_by("order").only('label', 'order')
     
     # Base queryset with only necessary fields
-    employees = Employee.objects.only('id', 'data').order_by('-id')
+    # employees = Employee.objects.values('id', 'data').order_by('-id')
+
+    employees = (Employee.objects.order_by('-id').values_list('id', 'data'))
     
     # Apply search filter if query exists
     if q:
@@ -179,24 +185,27 @@ def list_employees(request):
     # Paginate the results
     paginator = Paginator(employees, 50)  # Show 50 items per page
     page_obj = paginator.get_page(page_number)
+
+    # processed_employees = tuple(
+    #     {
+    #         "id": emp["id"],
+    #         "data": tuple(emp["data"].get(field.label, "") for field in dynamic_fields)  # Also made data a tuple
+    #     } 
+    #     for emp in page_obj
+    # )
+
     
-    # Process only the current page of employees
-    # processed_employees = []
-    # for emp in page_obj:
-    #     clean = {
-    #         "id": emp.id,
-    #         "data": [emp.data.get(field.label, "") for field in dynamic_fields]
-    #     }
-    #     processed_employees.append(clean)
 
     processed_employees = tuple(
-        {
-            "id": emp.id,
-            "data": tuple(emp.data.get(field.label, "") for field in dynamic_fields)  # Also made data a tuple
-        } 
-        for emp in page_obj
-    )
-    
+    {
+        "id": emp_id,
+        "data": tuple((data or {}).get(field.label, "") for field in dynamic_fields)
+    }
+    for emp_id, data in page_obj
+)
+
+
+
     return render(request, "employee_list.html", {
         "employees": processed_employees,
         "dynamic_fields": dynamic_fields,
@@ -210,3 +219,31 @@ def delete_employees(request, id):
     emp = get_object_or_404(Employee, id=id)
     emp.delete()
     return JsonResponse({"status": "success"})
+
+@login_required
+def upload_excel(request):
+    if request.method == 'POST' and request.FILES.get('excel_file'):
+        excel_file = request.FILES['excel_file']
+        
+        # Validate file extension
+        if not excel_file.name.endswith(('.xlsx', '.xls')):
+            messages.error(request, 'Please upload a valid Excel file (.xlsx or .xls)')
+            return redirect('list_employees')
+        
+        try:
+            # Process the Excel file
+            success_count, error_count, errors = process_excel_file(excel_file)
+            
+            if success_count > 0:
+                messages.success(request, f'Successfully imported {success_count} employee(s)')
+            if error_count > 0:
+                for error in errors:
+                    messages.warning(request, error)
+            
+            return redirect('list_employees')
+            
+        except Exception as e:
+            messages.error(request, f'Error processing Excel file: {str(e)}')
+            return redirect('list_employees')
+    
+    return redirect('list_employees')
