@@ -4,6 +4,13 @@
 .env.local
 .env.staging
 
+# Git
+.git
+.gitattributes
+
+# Docker
+!.dockerignore
+
 # Database
 *.sqlite3
 db.sqlite3
